@@ -1,0 +1,32 @@
+version: '2'
+services:
+
+  # Application container
+  python:
+    build:
+        context: ./
+        dockerfile: ./Dockerfile
+    image: python:3.6
+    environment:
+        - DEBUG=true
+        - PORT=8080
+        - MONGO_HOST=mongodb
+        - MONGO_PORT=27017
+        - MONGO_DB=recipes
+        - MONGO_TEST_DB=recipes_test
+    volumes:
+        - ./:/server/http
+    links:
+        - mongodb
+    depends_on:
+        - mongodb
+    ports:
+        - "8080:80"
+
+  # Database container
+  mongodb:
+    image:  mvertes/alpine-mongo:3.2.3
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+

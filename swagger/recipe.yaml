@@ -1,0 +1,232 @@
+swagger: '2.0'
+
+info:
+  title: rest Service for Recipe
+  description: A simple microservice to handle a recipe list
+  version: "0.1"
+
+basePath: /v1.0
+
+schemes:
+  - "http"
+consumes:
+  - application/json
+produces:
+  - application/json
+
+
+paths:
+
+  /recipes:
+    get:
+      operationId: api.recipe.class_instance.get_recipes
+      summary: Get all recipes
+      parameters:
+        - name: name
+          description: recipe name
+          in: query
+          type: string
+          required: false
+        - name: vegetarian
+          description: is the recipe a veg item
+          in: query
+          type: boolean
+          required: false
+        - name: prepTime
+          description: recipe preparation time
+          in: query
+          type: integer
+          required: false
+        - name: difficulty
+          description: recipe preparation difficulty level
+          in: query
+          type: integer
+          enum: [1, 2, 3]
+          required: false
+        - name: limit
+          description: page count
+          in: query
+          type: integer
+          minimum: 0
+          default: 100
+          required: false
+        - name: size
+          description:  page item size
+          in: query
+          type: integer
+          required: false
+        - name: sort
+          description: sort the recipes
+          in: query
+          type: string
+          enum: [asc, desc]
+          required: false
+      responses:
+        200:
+          description: Return all recipes
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Recipe'
+    post:
+      summary: Create a new Recipe
+      operationId: api.recipe.class_instance.create_recipe
+      parameters:
+        - in: body
+          name: new_recipe
+          description: The recipe to create
+          required: true
+          schema:
+            $ref: '#/definitions/Recipe'
+      responses:
+        201:
+          description: A new recipe was created
+          schema:
+            $ref: '#/definitions/Recipe'
+      security:
+        - oauth2: ['uid']
+
+  '/recipes/{recipe_id}':
+    get:
+      operationId: api.recipe.class_instance.get_recipe
+      summary: Get a single recipe
+      parameters:
+        - $ref: '#/parameters/recipe_id'
+      responses:
+        200:
+          description: Return recipe
+          schema:
+            $ref: '#/definitions/Recipe'
+        404:
+          description: Recipe does not exist
+    put:
+      operationId: api.recipe.class_instance.update_recipe
+      summary: Create or update a recipe
+      parameters:
+        - $ref: '#/parameters/recipe_id'
+        - name: recipe
+          in: body
+          schema:
+            $ref: '#/definitions/Recipe'
+      responses:
+        200:
+          description: Recipe updated
+        201:
+          description: New recipe created
+      security:
+        - oauth2: ['uid']
+
+    delete:
+      operationId: api.recipe.class_instance.delete_recipe
+      summary: Remove a recipe
+      parameters:
+        - $ref: '#/parameters/recipe_id'
+      responses:
+        204:
+          description: Recipe was deleted
+        404:
+          description: Recipe does not exist
+      security:
+        - oauth2: ['uid']
+
+  '/recipes/{recipe_id}/rating':
+    post:
+      summary: post rating for recipe
+      operationId: api.recipe.class_instance.rate_recipe
+      parameters:
+        - $ref: '#/parameters/recipe_id'
+        - name: rate_recipe
+          in: body
+          description: "Recipe review rating"
+          schema:
+            $ref: '#/definitions/review_rating'
+      responses:
+        200:
+          description: successfully updated rating
+          schema:
+            $ref: '#/definitions/Recipe'
+        404:
+          description: Error in posting rating
+
+
+
+################################################
+###### Definations, Tags and Parameters    #####
+#################################################
+definitions:
+  Recipe:
+    type: object
+    required:
+      - name
+      - prepTime
+      - difficulty
+      - vegetarian
+    properties:
+      id:
+        type: string
+        description: UUID
+        readOnly: true
+      name:
+        type: string
+        description: Recipe name
+        example: "Herby Pan-Seared Chicken"
+        minLength: 1
+        maxLength: 100
+      difficulty:
+        type: integer
+        description: Recipe preparation difficulty
+        enum: [1,2,3]
+      prepTime:
+        type: integer
+        description: time in mins to prepare a recipe
+        example: 10
+      vegetarian:
+        type: boolean
+        description: Is the Recipe a veg or non-veg item
+  review_rating:
+    type: object
+    required:
+      - rate
+      - user
+    properties:
+      rate:
+        type: integer
+        enum: [1,2,3,4,5,6]
+      user:
+        type: string
+        minLength: 1
+        maxLength: 25
+
+
+  Tag:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      name:
+        type: "string"
+
+
+parameters:
+  recipe_id:
+    name: recipe_id
+    description: Recipe's Unique identifier
+    in: path
+    type: string
+    required: true
+    pattern: "^[a-zA-Z0-9-]+$"
+
+
+
+#################
+#####  SECURITY
+###################
+securityDefinitions:
+  oauth2:
+    type: oauth2
+    flow: implicit
+    authorizationUrl: https://example.com/oauth2/dialog
+    x-tokenInfoFunc: lib.auth.token_info
+    scopes:
+      uid: Unique identifier of the user accessing the service.

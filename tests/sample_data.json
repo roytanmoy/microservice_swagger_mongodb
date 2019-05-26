@@ -1,0 +1,26 @@
+{
+  "recipe1": {
+    "id": "111",
+    "name": "rice",
+    "prepTime": 11,
+    "difficulty": 1,
+    "vegetarian": true,
+    "rating": []
+  },
+  "recipe2": {
+    "id": "222",
+    "name": "drinks",
+    "prepTime": 12,
+    "difficulty": 2,
+    "vegetarian": true,
+    "rating": []
+  },
+  "recipe3": {
+    "id": "333",
+    "name": "fish",
+    "prepTime": 90,
+    "difficulty": 3,
+    "vegetarian": false,
+    "rating": []
+  }
+}
